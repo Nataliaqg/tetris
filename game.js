@@ -58,9 +58,30 @@ const skillTitle = document.getElementById('skill-title');
 const skillList = document.getElementById('skill-list');
 const swapList = document.getElementById('swap-list');
 const skinSelect = document.getElementById('skin-select');
+const pauseMenu = document.getElementById('pause-menu');
+const controlsList = document.getElementById('pause-controls');
+const controlsBtn = document.getElementById('pause-controls-btn');
+const levelSelect = document.getElementById('start-level');
+
+const START_LEVEL_KEY = 'tetris.startLevel';
+const MAX_START_LEVEL = 10;
+const INPUT_LOCK_MS = 200;
 
 let board, current, queue, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let energy, menuOpen, menuMode, previewCount, slowMs, slowSecShown, holdState, heldPiece, undoSnapshot;
+let startLevel = loadStartLevel(), inputLockUntil = 0, ignoreRepeat = false;
+
+function loadStartLevel() {
+  try {
+    const n = parseInt(localStorage.getItem(START_LEVEL_KEY), 10);
+    if (n >= 1 && n <= MAX_START_LEVEL) return n;
+  } catch (err) { /* localStorage no disponible */ }
+  return 1;
+}
+
+function saveStartLevel() {
+  try { localStorage.setItem(START_LEVEL_KEY, String(startLevel)); } catch (err) { /* ignorar */ }
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -129,7 +150,7 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
+    level = Math.max(startLevel, Math.floor(lines / 10) + 1);
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     energy = Math.min(ENERGY_MAX, energy + cleared);
     updateHUD();
@@ -358,17 +379,37 @@ function endGame() {
   overlay.classList.remove('hidden');
 }
 
-function togglePause() {
-  if (gameOver || menuOpen) return;
-  paused = !paused;
-  if (!paused) {
-    lastTime = performance.now();
-    loop(lastTime);
-  } else {
-    cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+/* ---- Menú de pausa ---- */
+
+function openPause() {
+  if (paused || menuOpen || gameOver) return;
+  paused = true;
+  cancelAnimationFrame(animId);
+  levelSelect.value = startLevel;
+  controlsList.hidden = true;
+  controlsBtn.setAttribute('aria-expanded', 'false');
+  pauseMenu.classList.remove('hidden');
+  document.getElementById('pause-resume').focus();
+}
+
+function closePause() {
+  if (!paused) return;
+  paused = false;
+  pauseMenu.classList.add('hidden');
+  // Evita que teclas mantenidas muevan la pieza al volver
+  inputLockUntil = performance.now() + INPUT_LOCK_MS;
+  ignoreRepeat = true;
+  lastTime = performance.now();
+  loop(lastTime);
+}
+
+function handlePauseKey(e) {
+  if (e.code === 'KeyP' || e.code === 'Escape') {
+    e.preventDefault();
+    if (!e.repeat) closePause();
+  } else if (e.code === 'KeyR') {
+    e.preventDefault();
+    if (!e.repeat) init();
   }
 }
 
@@ -552,10 +593,10 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   energy = 0;
@@ -572,15 +613,22 @@ function init() {
   updateHUD();
   overlay.classList.add('hidden');
   skillMenu.classList.add('hidden');
+  pauseMenu.classList.add('hidden');
+  inputLockUntil = performance.now() + INPUT_LOCK_MS;
+  ignoreRepeat = true;
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
   if (e.target === skinSelect) return;
+  if (paused) { handlePauseKey(e); return; }
   if (menuOpen) { handleMenuKey(e); return; }
-  if (e.code === 'KeyP') { togglePause(); return; }
-  if (paused || gameOver) return;
+  if (gameOver) return;
+  if (e.code === 'KeyP' || e.code === 'Escape') { e.preventDefault(); openPause(); return; }
+  if (performance.now() < inputLockUntil) return;
+  if (e.repeat && ignoreRepeat) return;
+  ignoreRepeat = false;
   switch (e.code) {
     case 'ArrowLeft':
       if (!collide(current.shape, current.x - 1, current.y)) current.x--;
@@ -637,7 +685,19 @@ skinSelect.addEventListener('keydown', e => {
   if (e.code === 'Escape' || e.code === 'Enter') skinSelect.blur();
 });
 
-buildSwapList();
 skinSelect.value = skinId;
 applySkin(skinId);
+document.getElementById('pause-resume').addEventListener('click', closePause);
+document.getElementById('pause-restart').addEventListener('click', init);
+controlsBtn.addEventListener('click', () => {
+  controlsList.hidden = !controlsList.hidden;
+  controlsBtn.setAttribute('aria-expanded', String(!controlsList.hidden));
+});
+levelSelect.addEventListener('change', () => {
+  startLevel = Math.min(MAX_START_LEVEL, Math.max(1, Number(levelSelect.value) || 1));
+  saveStartLevel();
+});
+
+buildSwapList();
+for (let n = 1; n <= MAX_START_LEVEL; n++) levelSelect.add(new Option(n, n));
 init();
