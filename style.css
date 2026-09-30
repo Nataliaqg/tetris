@@ -290,3 +290,29 @@ kbd {
   border-radius: 4px;
   background: var(--piece-color);
 }
+
+/* ---- Skins ---- */
+.skin-select {
+  background: #1a1a25;
+  color: #c0caf5;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+body.skin-retro #board, body.skin-retro #next-canvas, body.skin-retro #hold-canvas { background: #1a1a25; }
+body.skin-neon #board, body.skin-neon #next-canvas, body.skin-neon #hold-canvas {
+  background: #000;
+  border-color: #0ff3;
+}
+body.skin-neon #board { box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); }
+body.skin-pastel #board, body.skin-pastel #next-canvas, body.skin-pastel #hold-canvas {
+  background: #fdf8ff;
+  border-color: #d9c9e6;
+}
+body.skin-pixel #board, body.skin-pixel #next-canvas, body.skin-pixel #hold-canvas {
+  background: #151a12;
+  border-color: #3b4632;
+  border-radius: 0;
+}
