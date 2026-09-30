@@ -520,7 +520,7 @@ function buildSwapList() {
 function applySkin(id) {
   if (!SKINS[id]) return;
   skinId = id;
-  document.body.className = 'skin-' + id;
+  for (const k of Object.keys(SKINS)) document.body.classList.toggle('skin-' + k, k === id);
   for (const btn of swapList.querySelectorAll('.swap-btn'))
     btn.style.setProperty('--piece-color', skin().colors[btn.dataset.type]);
   if (current && queue) { draw(); drawNext(); drawHold(); }
@@ -631,6 +631,10 @@ skinSelect.addEventListener('change', () => {
   applySkin(skinSelect.value);
   try { localStorage.setItem('tetris.skin', skinId); } catch (e) { /* ignore */ }
   skinSelect.blur();
+});
+
+skinSelect.addEventListener('keydown', e => {
+  if (e.code === 'Escape' || e.code === 'Enter') skinSelect.blur();
 });
 
 buildSwapList();
