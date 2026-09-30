@@ -65,11 +65,30 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <div id="name-entry" class="name-entry hidden">
+          <span>¡Nuevo record! Tu nombre:</span>
+          <div class="name-row">
+            <input id="name-input" type="text" maxlength="12" autocomplete="off" />
+            <button id="name-save" class="skill-btn">Guardar</button>
+          </div>
+        </div>
+        <div id="records-wrap" class="hidden">
+          <div id="records" class="records"></div>
+          <button id="reset-over" class="reset-btn">Borrar records</button>
+        </div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
 
-    <div id="skill-menu" class="overlay hidden">
+    <div id="start-screen" class="overlay">
+      <div class="overlay-box">
+        <div id="start-records" class="records"></div>
+        <button id="start-btn">Jugar <kbd>Enter</kbd></button>
+        <button id="reset-start" class="reset-btn">Borrar records</button>
+      </div>
+    </div>
+
+    <div id="skill-menu"class="overlay hidden">
       <div class="overlay-box skill-box">
         <p id="skill-title">ENERGÍA</p>
         <div id="skill-list" class="skill-list">
