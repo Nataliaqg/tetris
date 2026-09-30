@@ -65,6 +65,14 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <form id="name-form" class="name-form" hidden>
+          <label for="name-input">¡Entras en el top 5! Tu nombre:</label>
+          <div class="name-row">
+            <input id="name-input" type="text" maxlength="12" autocomplete="off" placeholder="Anónimo" />
+            <button type="submit" id="name-save">Guardar</button>
+          </div>
+        </form>
+        <div id="over-records" class="records" hidden></div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
@@ -98,6 +106,14 @@
           </ul>
           <button id="controls-back" class="skill-cancel">Volver <kbd>Esc</kbd></button>
         </div>
+      </div>
+    </div>
+
+    <div id="start-screen" class="overlay hidden">
+      <div class="overlay-box">
+        <p id="start-title">TETRIS</p>
+        <div id="start-records" class="records"></div>
+        <button id="start-btn">Jugar</button>
       </div>
     </div>
 

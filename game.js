@@ -34,6 +34,9 @@ const SLOW_MS = 10000;
 const SLOW_FACTOR = 2;
 const SKILLS = ['preview', 'swap', 'slow', 'undo', 'hold'];
 const MAX_START_LEVEL = 15;
+const RECORDS_KEY = 'tetris-records';
+const TOP_SIZE = 5;
+const NAME_MAX = 12;
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
@@ -66,9 +69,15 @@ const skillMenu = document.getElementById('skill-menu');
 const skillTitle = document.getElementById('skill-title');
 const skillList = document.getElementById('skill-list');
 const swapList = document.getElementById('swap-list');
+const startScreen = document.getElementById('start-screen');
+const startRecords = document.getElementById('start-records');
+const overRecords = document.getElementById('over-records');
+const nameForm = document.getElementById('name-form');
+const nameInput = document.getElementById('name-input');
 
 let board, current, queue, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let startLevel = 1; // chosen in the pause menu, applied on the next init()
+let combo, bestCombo, startOpen, pendingRank, savedRank;
 let energy, menuOpen, menuMode, previewCount, slowMs, slowSecShown, holdState, heldPiece, undoSnapshot;
 
 function intervalForLevel(lvl) {
@@ -139,6 +148,8 @@ function clearLines() {
       r++;
     }
   }
+  combo = cleared ? combo + 1 : 0;
+  bestCombo = Math.max(bestCombo, combo);
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
@@ -293,7 +304,115 @@ function endGame() {
   cancelAnimationFrame(animId);
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+  const rec = loadRecords();
+  rec.bestCombo = Math.max(rec.bestCombo, bestCombo);
+  rec.maxLines = Math.max(rec.maxLines, lines);
+  saveRecords(rec);
+  pendingRank = score > 0 ? rankFor(rec, score) : -1;
+  savedRank = -1;
+  nameForm.hidden = pendingRank < 0;
+  nameInput.value = '';
+  renderRecords(overRecords, rec, pendingRank, true);
+  overRecords.hidden = false;
   overlay.classList.remove('hidden');
+  if (pendingRank >= 0) nameInput.focus();
+}
+
+/* ---- Records ---- */
+
+function loadRecords() {
+  const empty = { scores: [], bestCombo: 0, maxLines: 0 };
+  try {
+    const data = JSON.parse(localStorage.getItem(RECORDS_KEY));
+    if (!data || !Array.isArray(data.scores)) return empty;
+    return {
+      scores: data.scores.slice(0, TOP_SIZE),
+      bestCombo: Number(data.bestCombo) || 0,
+      maxLines: Number(data.maxLines) || 0,
+    };
+  } catch (err) {
+    return empty;
+  }
+}
+
+function saveRecords(rec) {
+  try { localStorage.setItem(RECORDS_KEY, JSON.stringify(rec)); } catch (err) { /* storage unavailable */ }
+}
+
+// Position the score would take in the top (ties go below), or -1 if it does not qualify.
+function rankFor(rec, pts) {
+  let i = rec.scores.findIndex(r => pts > r.score);
+  if (i < 0) i = rec.scores.length;
+  return i < TOP_SIZE ? i : -1;
+}
+
+// highlight: row index to mark; provisional: that row is still waiting for a name.
+function renderRecords(container, rec, highlight, provisional) {
+  container.replaceChildren();
+  const title = document.createElement('span');
+  title.className = 'records-title';
+  title.textContent = 'MEJORES PUNTUACIONES';
+  const list = document.createElement('ol');
+  list.className = 'records-list';
+  const rows = rec.scores.map(r => ({ name: r.name, score: r.score }));
+  if (provisional && highlight >= 0) rows.splice(highlight, 0, { name: '(tú)', score });
+  for (let i = 0; i < TOP_SIZE; i++) {
+    const li = document.createElement('li');
+    const row = rows[i];
+    li.className = row ? '' : 'empty';
+    if (row && i === highlight) li.classList.add('current');
+    for (const text of [`${i + 1}.`, row ? row.name : '---', row ? row.score.toLocaleString() : '']) {
+      const span = document.createElement('span');
+      span.textContent = text;
+      li.appendChild(span);
+    }
+    list.appendChild(li);
+  }
+  const stats = document.createElement('div');
+  stats.className = 'records-stats';
+  stats.innerHTML = '<span>Mejor combo: <b></b></span><span>Líneas máx: <b></b></span>';
+  const values = stats.querySelectorAll('b');
+  values[0].textContent = rec.bestCombo;
+  values[1].textContent = rec.maxLines;
+  const reset = document.createElement('button');
+  reset.type = 'button';
+  reset.className = 'reset-btn';
+  reset.textContent = 'Borrar récords';
+  reset.addEventListener('click', resetRecords);
+  container.append(title, list, stats, reset);
+}
+
+function commitRecord() {
+  if (pendingRank < 0) return;
+  const rec = loadRecords();
+  const name = nameInput.value.trim().slice(0, NAME_MAX) || 'Anónimo';
+  savedRank = rankFor(rec, score);
+  if (savedRank >= 0) {
+    rec.scores.splice(savedRank, 0, { name, score });
+    rec.scores.length = Math.min(rec.scores.length, TOP_SIZE);
+    saveRecords(rec);
+  }
+  pendingRank = -1;
+  nameForm.hidden = true;
+  renderRecords(overRecords, rec, savedRank, false);
+}
+
+function resetRecords() {
+  if (!confirm('¿Borrar todos los récords?')) return;
+  try { localStorage.removeItem(RECORDS_KEY); } catch (err) { /* storage unavailable */ }
+  const rec = loadRecords();
+  pendingRank = -1;
+  savedRank = -1;
+  nameForm.hidden = true;
+  renderRecords(startRecords, rec, -1, false);
+  renderRecords(overRecords, rec, -1, false);
+}
+
+function showStartScreen() {
+  startOpen = true;
+  cancelAnimationFrame(animId);
+  renderRecords(startRecords, loadRecords(), -1, false);
+  startScreen.classList.remove('hidden');
 }
 
 function togglePause() {
@@ -544,6 +663,11 @@ function init() {
   dropInterval = intervalForLevel(level);
   dropAccum = 0;
   lastTime = performance.now();
+  combo = 0;
+  bestCombo = 0;
+  startOpen = false;
+  pendingRank = -1;
+  savedRank = -1;
   energy = 0;
   menuOpen = false;
   menuMode = 'skills';
@@ -559,11 +683,17 @@ function init() {
   overlay.classList.add('hidden');
   hidePauseMenu();
   skillMenu.classList.add('hidden');
+  startScreen.classList.add('hidden');
+  if (document.activeElement) document.activeElement.blur();
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
+  if (startOpen) {
+    if (e.code === 'Enter') { e.preventDefault(); init(); }
+    return;
+  }
   if (menuOpen) { handleMenuKey(e); return; }
   if (paused) { handlePauseKey(e); return; }
   if (gameOver) return;
@@ -612,7 +742,6 @@ document.getElementById('skill-cancel').addEventListener('click', () => {
   else closeMenu();
 });
 
-restartBtn.addEventListener('click', init);
 resumeBtn.addEventListener('click', togglePause);
 document.getElementById('pause-restart-btn').addEventListener('click', init);
 document.getElementById('controls-btn').addEventListener('click', showPauseControls);
@@ -620,5 +749,19 @@ document.getElementById('controls-back').addEventListener('click', () => { showP
 levelDownBtn.addEventListener('click', () => changeStartLevel(-1));
 levelUpBtn.addEventListener('click', () => changeStartLevel(1));
 
+restartBtn.addEventListener('click', () => {
+  commitRecord();
+  init();
+});
+
+nameForm.addEventListener('submit', e => {
+  e.preventDefault();
+  commitRecord();
+  restartBtn.focus();
+});
+
+document.getElementById('start-btn').addEventListener('click', init);
+
 buildSwapList();
 init();
+showStartScreen();
