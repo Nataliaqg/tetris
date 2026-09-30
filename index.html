@@ -55,7 +55,7 @@
             <li><kbd>Space</kbd> caída</li>
             <li><kbd>E</kbd> energía</li>
             <li><kbd>C</kbd> hold</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd>/<kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
@@ -81,6 +81,29 @@
         </div>
         <div id="swap-list" class="swap-list" hidden></div>
         <button id="skill-cancel" class="skill-cancel">Cancelar <kbd>Esc</kbd></button>
+      </div>
+    </div>
+
+    <div id="pause-menu" class="overlay hidden">
+      <div class="overlay-box skill-box">
+        <p id="pause-title">PAUSA</p>
+        <div class="skill-list">
+          <button id="pause-resume" class="skill-btn">Reanudar <kbd>P</kbd></button>
+          <button id="pause-restart" class="skill-btn">Reiniciar <kbd>R</kbd></button>
+          <button id="pause-controls-btn" class="skill-btn" aria-expanded="false">Ver controles</button>
+          <ul id="pause-controls" class="pause-controls" hidden>
+            <li><kbd>←</kbd><kbd>→</kbd> mover</li>
+            <li><kbd>↑</kbd> / <kbd>X</kbd> rotar</li>
+            <li><kbd>↓</kbd> bajar</li>
+            <li><kbd>Space</kbd> caída</li>
+            <li><kbd>E</kbd> energía</li>
+            <li><kbd>C</kbd> hold</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> pausa</li>
+          </ul>
+          <label class="pause-level">Nivel inicial
+            <select id="start-level"></select>
+          </label>
+        </div>
       </div>
     </div>
   </div>
