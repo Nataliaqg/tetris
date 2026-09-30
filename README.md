@@ -183,11 +183,21 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `COLORS`       | Paleta de colores por tipo de pieza (skin Retro) | 7 colores     |
+| `SKINS`        | Temas visuales (colores, rejilla, fondo y estilo de bloque) | `retro`, `neon`, `pastel`, `pixel` |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
+
+### Temas visuales (skins)
+
+El selector **SKIN** del panel derecho cambia todo el aspecto del juego y se guarda en `localStorage` (`tetris.skin`):
+
+- **Retro**: bloques cuadrados de color plano (por defecto).
+- **Neon**: fondo negro y brillo con `shadowBlur`.
+- **Pastel**: colores suaves y bordes redondeados.
+- **Pixel art**: textura de píxeles dibujada en cada bloque.
 
 ---
 
