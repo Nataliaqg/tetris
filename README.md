@@ -39,6 +39,12 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Soft drop** (bajada acelerada) y **hard drop** (caída instantánea).
 - **Pieza fantasma** (_ghost piece_): muestra dónde aterrizará la pieza actual.
 - **Vista previa** de la siguiente pieza.
+- **Barra de energía**: cada línea limpiada suma 1 punto (máx. 10). Con la barra llena, pulsa `E` para elegir una habilidad (el juego se congela mientras eliges):
+  1. **Ver siguientes 5 piezas** — el panel NEXT muestra 5 piezas durante las próximas 5 que aparezcan.
+  2. **Cambiar pieza actual** — eliges uno de los 7 tipos.
+  3. **Ralentizar tiempo** — la caída va a mitad de velocidad durante 10 s.
+  4. **Deshacer última colocación** — restaura tablero y puntuación previos a la última pieza fijada.
+  5. **Reservar pieza (hold)** — desbloquea un uso de `C`: primera pulsación guarda la pieza, segunda la recupera.
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
@@ -84,6 +90,10 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
+| `E`       | Abrir menú de habilidades (barra llena) |
+| `1`–`7`   | Elegir opción en el menú          |
+| `Esc`     | Cerrar menú / volver atrás        |
+| `C`       | Hold (tras activar la habilidad)  |
 | `P`       | Pausar / reanudar                 |
 
 ---
@@ -97,7 +107,7 @@ El juego se compone de tres archivos que cooperan:
 Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
-- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
+- Un panel izquierdo con `HOLD`, `SCORE`, `LINES`, `LEVEL` y la barra de `ENERGY`, y un panel derecho con la vista de siguientes piezas (`NEXT`) y la lista de controles.
 - Un overlay para los estados **PAUSA** y **GAME OVER**.
 
 ### 2. `style.css`

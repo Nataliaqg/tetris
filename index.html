@@ -10,9 +10,13 @@
   <h1 class="title">TETRIS</h1>
   <div class="wrapper">
     <div class="game-container">
-      <canvas id="board" width="300" height="600"></canvas>
+      <aside class="panel panel-left">
+        <div class="panel-section locked" id="hold-section">
+          <span class="label">HOLD</span>
+          <canvas id="hold-canvas" width="120" height="120"></canvas>
+          <span id="hold-hint" class="energy-text"></span>
+        </div>
 
-      <aside class="panel">
         <div class="panel-section">
           <span class="label">SCORE</span>
           <span class="value" id="score">0</span>
@@ -27,8 +31,19 @@
         </div>
 
         <div class="panel-section">
+          <span class="label">ENERGY</span>
+          <div id="energy-bar" class="energy-bar"><div id="energy-fill"></div></div>
+          <span id="energy-text" class="energy-text">0/10</span>
+          <span id="slow-status" class="slow-status"></span>
+        </div>
+      </aside>
+
+      <canvas id="board" width="300" height="600"></canvas>
+
+      <aside class="panel panel-right">
+        <div class="panel-section">
           <span class="label">NEXT</span>
-          <canvas id="next-canvas" width="120" height="120"></canvas>
+          <canvas id="next-canvas" width="120" height="300"></canvas>
         </div>
 
         <div class="panel-section controls">
@@ -38,6 +53,8 @@
             <li><kbd>↑</kbd> rotar</li>
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
+            <li><kbd>E</kbd> energía</li>
+            <li><kbd>C</kbd> hold</li>
             <li><kbd>P</kbd> pausa</li>
           </ul>
         </div>
@@ -49,6 +66,21 @@
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
         <button id="restart-btn">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="skill-menu" class="overlay hidden">
+      <div class="overlay-box skill-box">
+        <p id="skill-title">ENERGÍA</p>
+        <div id="skill-list" class="skill-list">
+          <button class="skill-btn" data-skill="preview"><kbd>1</kbd> Ver siguientes 5 piezas</button>
+          <button class="skill-btn" data-skill="swap"><kbd>2</kbd> Cambiar pieza actual</button>
+          <button class="skill-btn" data-skill="slow"><kbd>3</kbd> Ralentizar tiempo 10s</button>
+          <button class="skill-btn" data-skill="undo"><kbd>4</kbd> Deshacer última colocación</button>
+          <button class="skill-btn" data-skill="hold"><kbd>5</kbd> Reservar pieza (hold)</button>
+        </div>
+        <div id="swap-list" class="swap-list" hidden></div>
+        <button id="skill-cancel" class="skill-cancel">Cancelar <kbd>Esc</kbd></button>
       </div>
     </div>
   </div>
