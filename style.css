@@ -1,3 +1,40 @@
+/* Tema activo: body[data-theme] redefine estas variables (ver THEMES en game.js) */
+:root {
+  --page-bg: #0f0f17;
+  --canvas-bg: #1a1a25;
+  --canvas-border: #2a2a3a;
+  --accent: #7aa2f7;
+  --text: #e0e0e0;
+  --label: #555570;
+}
+
+body[data-theme="neon"] {
+  --page-bg: #000;
+  --canvas-bg: #000;
+  --canvas-border: #00f0ff;
+  --accent: #00f0ff;
+  --text: #d8faff;
+  --label: #3fa7b3;
+}
+
+body[data-theme="pastel"] {
+  --page-bg: #fbf5ff;
+  --canvas-bg: #fffafc;
+  --canvas-border: #e0d3ee;
+  --accent: #9b7fc9;
+  --text: #5b4e70;
+  --label: #a596bd;
+}
+
+body[data-theme="pixel"] {
+  --page-bg: #11160f;
+  --canvas-bg: #0b0f0a;
+  --canvas-border: #4a5a3a;
+  --accent: #8bd450;
+  --text: #cfe3b8;
+  --label: #6d8456;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,8 +42,9 @@
 }
 
 body {
-  background: #0f0f17;
-  color: #e0e0e0;
+  background: var(--page-bg);
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
   flex-direction: column;
@@ -21,7 +59,7 @@ body {
   font-size: 32px;
   font-weight: 800;
   letter-spacing: 8px;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 .wrapper {
@@ -36,8 +74,8 @@ body {
 
 #board {
   display: block;
-  border: 1px solid #2a2a3a;
-  background: #1a1a25;
+  border: 1px solid var(--canvas-border);
+  background: var(--canvas-bg);
   border-radius: 4px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
@@ -68,7 +106,7 @@ body {
 .label {
   font-size: 10px;
   letter-spacing: 2px;
-  color: #555570;
+  color: var(--label);
   font-weight: 600;
 }
 
@@ -76,14 +114,14 @@ body {
   font-family: 'Courier New', Courier, monospace;
   font-size: 26px;
   font-weight: 700;
-  color: #7aa2f7;
+  color: var(--accent);
   letter-spacing: 1px;
 }
 
 #next-canvas {
   display: block;
-  border: 1px solid #2a2a3a;
-  background: #1a1a25;
+  border: 1px solid var(--canvas-border);
+  background: var(--canvas-bg);
   border-radius: 4px;
 }
 
@@ -93,16 +131,16 @@ body {
 
 #hold-canvas {
   display: block;
-  border: 1px solid #2a2a3a;
-  background: #1a1a25;
+  border: 1px solid var(--canvas-border);
+  background: var(--canvas-bg);
   border-radius: 4px;
 }
 
 /* ---- Energía ---- */
 .energy-bar {
   height: 12px;
-  background: #1a1a25;
-  border: 1px solid #2a2a3a;
+  background: var(--canvas-bg);
+  border: 1px solid var(--canvas-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -110,7 +148,7 @@ body {
 #energy-fill {
   height: 100%;
   width: 0;
-  background: #7aa2f7;
+  background: var(--accent);
   transition: width 0.25s;
 }
 
@@ -171,7 +209,7 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 10, 20, 0.75);
+  background: color-mix(in srgb, var(--page-bg) 78%, transparent);
   backdrop-filter: blur(4px);
   border-radius: 4px;
 }
@@ -198,14 +236,14 @@ kbd {
 #overlay-score {
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 #restart-btn,
 #start-btn {
   margin-top: 8px;
-  background: #7aa2f7;
-  color: #0f0f17;
+  background: var(--accent);
+  color: var(--page-bg);
   border: none;
   border-radius: 6px;
   padding: 10px 28px;
@@ -218,7 +256,7 @@ kbd {
 
 #restart-btn:hover,
 #start-btn:hover {
-  background: #9bbdff;
+  filter: brightness(1.15);
 }
 
 /* ---- Menú de habilidades ---- */
@@ -298,7 +336,7 @@ kbd {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 4px;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 .pause-main,
@@ -352,7 +390,7 @@ kbd {
   font-family: 'Courier New', Courier, monospace;
   font-size: 18px;
   font-weight: 700;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 .step-btn {
@@ -386,7 +424,7 @@ kbd {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 6px;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 .records {
@@ -446,7 +484,7 @@ kbd {
 }
 
 .records-stats b {
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 .reset-btn {
@@ -502,4 +540,33 @@ kbd {
   padding: 6px 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ---- Selector de tema ---- */
+.theme-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  background: transparent;
+  color: var(--label);
+  border: 1px solid var(--canvas-border);
+  border-radius: 14px;
+  padding: 4px 14px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.theme-btn:hover {
+  color: var(--text);
+}
+
+.theme-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--page-bg);
+  font-weight: 700;
 }
