@@ -290,3 +290,91 @@ kbd {
   border-radius: 4px;
   background: var(--piece-color);
 }
+
+/* ---- Menú de pausa ---- */
+#pause-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #7aa2f7;
+}
+
+.pause-main,
+.pause-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.pause-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pause-controls ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font-size: 13px;
+  color: #aaa;
+}
+
+.pause-controls li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.level-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 0;
+  font-size: 13px;
+}
+
+.level-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-value {
+  min-width: 24px;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: #7aa2f7;
+}
+
+.step-btn {
+  width: 28px;
+  height: 28px;
+  background: #22223a;
+  color: #e0e0e0;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.step-btn:hover:not(:disabled) {
+  background: #2f2f52;
+}
+
+.step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.level-hint {
+  font-size: 11px;
+  color: #666;
+}
