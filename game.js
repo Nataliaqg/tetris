@@ -4,16 +4,8 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
 
-const COLORS = [
-  null,
-  '#4dd0e1', // I - cyan
-  '#ffd54f', // O - yellow
-  '#ba68c8', // T - purple
-  '#81c784', // S - green
-  '#e57373', // Z - red
-  '#7986cb', // J - indigo
-  '#ffb74d', // L - orange
-];
+// Active palette; replaced by applyTheme(). Index = piece type (see PIECES).
+let COLORS;
 
 const PIECES = [
   null,
@@ -33,6 +25,133 @@ const QUEUE_SIZE = 5;
 const SLOW_MS = 10000;
 const SLOW_FACTOR = 2;
 const SKILLS = ['preview', 'swap', 'slow', 'undo', 'hold'];
+
+/* ---- Temas visuales ---- */
+
+const THEME_KEY = 'tetris-theme';
+const DEFAULT_THEME = 'retro';
+
+function roundedRect(context, x, y, w, h, r) {
+  context.beginPath();
+  context.moveTo(x + r, y);
+  context.arcTo(x + w, y, x + w, y + h, r);
+  context.arcTo(x + w, y + h, x, y + h, r);
+  context.arcTo(x, y + h, x, y, r);
+  context.arcTo(x, y, x + w, y, r);
+  context.closePath();
+}
+
+// Each theme: palette (index = piece type), grid line color and a draw(context, px, py, size, color)
+// that paints one block at pixel position (px, py). Canvas backgrounds live in CSS (body[data-theme]).
+const THEMES = {
+  retro: {
+    label: 'Retro',
+    colors: [null, '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784', '#e57373', '#7986cb', '#ffb74d'],
+    grid: '#22222e',
+    draw(context, px, py, size, color) {
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      context.fillStyle = 'rgba(255,255,255,0.12)';
+      context.fillRect(px + 1, py + 1, size - 2, Math.max(2, size * 0.13));
+    },
+  },
+  neon: {
+    label: 'Neon',
+    colors: [null, '#00f0ff', '#fff200', '#d400ff', '#39ff14', '#ff2a54', '#4d6bff', '#ff8a00'],
+    grid: '#14141f',
+    draw(context, px, py, size, color) {
+      const inset = Math.max(1.5, size * 0.1);
+      context.save();
+      context.shadowColor = color;
+      context.shadowBlur = size * 0.45;
+      context.lineWidth = Math.max(1.5, size * 0.07);
+      context.strokeStyle = color;
+      context.fillStyle = color + '44';
+      context.fillRect(px + inset, py + inset, size - inset * 2, size - inset * 2);
+      context.strokeRect(px + inset, py + inset, size - inset * 2, size - inset * 2);
+      context.restore();
+    },
+  },
+  pastel: {
+    label: 'Pastel',
+    colors: [null, '#a8e6ef', '#fff1a8', '#dcbff0', '#b9efc4', '#f7b9bf', '#b7c0f2', '#ffd6a5'],
+    grid: '#e4dfee',
+    draw(context, px, py, size, color) {
+      const pad = Math.max(1, size * 0.06);
+      const w = size - pad * 2;
+      roundedRect(context, px + pad, py + pad, w, w, size * 0.3);
+      context.fillStyle = color;
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = 'rgba(255,255,255,0.9)';
+      context.stroke();
+      // soft glossy highlight
+      roundedRect(context, px + size * 0.2, py + size * 0.18, w * 0.5, size * 0.14, size * 0.07);
+      context.fillStyle = 'rgba(255,255,255,0.55)';
+      context.fill();
+    },
+  },
+  pixel: {
+    label: 'Pixel art',
+    colors: [null, '#29b6c8', '#f2b705', '#9c3fb8', '#4caf50', '#d84343', '#4a5fc1', '#ef8a17'],
+    grid: '#1f2a1f',
+    draw(context, px, py, size, color) {
+      const u = Math.max(1, Math.round(size / 6)); // one "art pixel"
+      const n = Math.floor(size / u);
+      // dark outline + base
+      context.fillStyle = 'rgba(0,0,0,0.75)';
+      context.fillRect(px, py, size, size);
+      context.fillStyle = color;
+      context.fillRect(px + u * 0.5, py + u * 0.5, size - u, size - u);
+      // checker texture
+      context.fillStyle = 'rgba(0,0,0,0.16)';
+      for (let i = 1; i < n - 1; i++)
+        for (let j = 1; j < n - 1; j++)
+          if ((i + j) % 2 === 0) context.fillRect(px + i * u, py + j * u, u, u);
+      // bevel: light top/left, dark bottom/right
+      context.fillStyle = 'rgba(255,255,255,0.45)';
+      context.fillRect(px + u * 0.5, py + u * 0.5, size - u, u);
+      context.fillRect(px + u * 0.5, py + u * 0.5, u, size - u);
+      context.fillStyle = 'rgba(0,0,0,0.35)';
+      context.fillRect(px + u * 0.5, py + size - u * 1.5, size - u, u);
+      context.fillRect(px + size - u * 1.5, py + u * 0.5, u, size - u);
+    },
+  },
+};
+
+let theme;
+
+function loadThemePref() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved && THEMES[saved]) return saved;
+  } catch (e) { /* storage unavailable */ }
+  return DEFAULT_THEME;
+}
+
+function applyTheme(id) {
+  if (!THEMES[id]) id = DEFAULT_THEME;
+  theme = THEMES[id];
+  COLORS = theme.colors;
+  document.body.dataset.theme = id;
+  try { localStorage.setItem(THEME_KEY, id); } catch (e) { /* storage unavailable */ }
+  for (const btn of themeBar.querySelectorAll('.theme-btn'))
+    btn.classList.toggle('active', btn.dataset.theme === id);
+  for (const btn of swapList.querySelectorAll('.swap-btn'))
+    btn.style.setProperty('--piece-color', COLORS[Number(btn.dataset.type)]);
+  // Redraw everything: the loop is not running while paused / in menus / game over.
+  if (current) { draw(); drawNext(); drawHold(); }
+}
+
+function buildThemeBar() {
+  for (const [id, t] of Object.entries(THEMES)) {
+    const btn = document.createElement('button');
+    btn.className = 'theme-btn';
+    btn.dataset.theme = id;
+    btn.textContent = t.label;
+    themeBar.appendChild(btn);
+  }
+}
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
@@ -57,6 +176,7 @@ const skillMenu = document.getElementById('skill-menu');
 const skillTitle = document.getElementById('skill-title');
 const skillList = document.getElementById('skill-list');
 const swapList = document.getElementById('swap-list');
+const themeBar = document.getElementById('theme-bar');
 
 let board, current, queue, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let energy, menuOpen, menuMode, previewCount, slowMs, slowSecShown, holdState, heldPiece, undoSnapshot;
@@ -202,18 +322,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  theme.draw(context, x * size, y * size, size, COLORS[colorIndex]);
   context.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = theme.grid;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -541,5 +656,14 @@ document.getElementById('skill-cancel').addEventListener('click', () => {
 
 restartBtn.addEventListener('click', init);
 
+themeBar.addEventListener('click', e => {
+  const btn = e.target.closest('.theme-btn');
+  if (!btn) return;
+  applyTheme(btn.dataset.theme);
+  btn.blur(); // keep Space / arrows going to the game, not the button
+});
+
+buildThemeBar();
+applyTheme(loadThemePref());
 buildSwapList();
 init();
