@@ -409,7 +409,6 @@ function endGame() {
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
 
-  records = loadRecords();
   records.bestCombo = Math.max(records.bestCombo, maxCombo);
   records.maxLines = Math.max(records.maxLines, lines);
   saveRecords();
@@ -691,7 +690,10 @@ document.getElementById('skill-cancel').addEventListener('click', () => {
   else closeMenu();
 });
 
-restartBtn.addEventListener('click', init);
+restartBtn.addEventListener('click', () => {
+  saveName(); // keep a pending record if the player skipped "Guardar"
+  init();
+});
 startBtn.addEventListener('click', startGame);
 document.getElementById('reset-start').addEventListener('click', resetRecords);
 document.getElementById('reset-over').addEventListener('click', resetRecords);
